@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clash Characters</title>
+    <style>
+        /* General Page Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Banner Style */
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Grid Container */
+        .grid-container {
+            display: grid;
+            /* Creates a responsive grid that fits as many columns as possible */
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Card Style */
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Image Container */
+        .image-container {
+            background-color: #eecda3; /* Fallback color */
+            padding: 20px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+        }
+
+        /* Card Content */
+        .card-content {
+            padding: 20px;
+        }
+
+        .card h2 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95rem;
+        }
+
+        .stat-line:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #777;
+        }
+
+        /* Rarity Colors */
+        .rarity-common { color: #888; }
+        .rarity-rare { color: #d35400; }
+        .rarity-epic { color: #8e44ad; }
+        .rarity-legendary { color: #f1c40f; font-weight: bold; text-shadow: 0px 0px 1px #000; }
+
+        /* Loading Message */
+        #loading {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 1.5rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Clash Characters</h1>
+    </header>
+
+    <div id="loading">Loading Characters...</div>
+    <div class="grid-container" id="character-grid">
+        </div>
+
+    <script>
+        // The API Endpoint
+        const apiUrl = 'https://jwt3dnhnyk.execute-api.us-east-2.amazonaws.com/dev/characters';
+
+        // Function to fetch and display data
+        async function fetchCharacters() {
+            try {
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                renderGrid(data);
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('loading').innerHTML = 
+                    `Error loading data. <br><small>${error.message}</small>`;
+            }
+        }
+
+        // Function to build HTML for the grid
+        function renderGrid(characters) {
+            const grid = document.getElementById('character-grid');
+            const loading = document.getElementById('loading');
+            
+            // Hide loading text
+            loading.style.display = 'none';
+
+            characters.forEach(char => {
+                // Determine CSS class for rarity color
+                const rarityClass = `rarity-${char.Rarity.toLowerCase()}`;
+
+                // Create Card HTML
+                const cardHTML = `
+                    <div class="card">
+                        <div class="image-container">
+                            <img src="${char.ImageUrl}" alt="${char.CharacterName}">
+                        </div>
+                        <div class="card-content">
+                            <h2>${char.CharacterName}</h2>
+                            
+                            <div class="stat-line">
+                                <span class="label">Rarity:</span>
+                                <span class="${rarityClass}">${char.Rarity}</span>
+                            </div>
+                            <div class="stat-line">
+                                <span class="label">Elixir Cost:</span>
+                                <span>💧 ${char.ElixirCost}</span>
+                            </div>
+                             <div class="stat-line">
+                                <span class="label">Hitpoints:</span>
+                                <span>❤️ ${char.Hitpoints}</span>
+                            </div>
+                            <div class="stat-line">
+                                <span class="label">Damage:</span>
+                                <span>⚔️ ${char.Damage}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Append to grid
+                grid.innerHTML += cardHTML;
+            });
+        }
+
+        // Initialize
+        fetchCharacters();
+    </script>
+</body>
+</html>
